@@ -1165,7 +1165,7 @@ dd819a875c584bc469082fcf519779ea00b1d952 - kernel-open/nvidia/libspdm_aead_aes_g
 2f6e4c6ee6f809097c8b07a7b698e8614bf25e57 - kernel-open/nvidia/nv-caps.c
 d11ab03a617b29efcf00f85e24ebce60f91cf82c - kernel-open/nvidia/nv-backlight.c
 57a06cab892f111b0fb1ebe182c0c688560e750e - kernel-open/nvidia/nvspdm_cryptlib_extensions.h
-189eebce734b698f0fd0b60290eca7922b865888 - kernel-open/nvidia/nv-imp.c
+363185059b03b6756b434c6ba9a2ebd79a888cf0 - kernel-open/nvidia/nv-imp.c
 8bedc7374d7a43250e49fb09139c511b489d45e3 - kernel-open/nvidia/nv-pci-table.h
 68d781e929d103e6fa55fa92b5d4f933fbfb6526 - kernel-open/nvidia/nv-report-err.h
 94c406f36836c3396b0ca08b4ff71496666b9c43 - kernel-open/nvidia/os-usermap.c
