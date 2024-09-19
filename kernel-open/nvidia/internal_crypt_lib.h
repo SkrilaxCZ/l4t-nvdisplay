@@ -63,7 +63,7 @@
  * old or even just user disabled. If we should use LKCA, include headers, else
  * define stubs to return errors.
  */
-#if defined(NV_CRYPTO_PRESENT) && defined (NV_CONFIG_CRYPTO_PRESENT)
+#if defined(NV_CRYPTO_PRESENT)
 #define USE_LKCA 1
 #endif
 
