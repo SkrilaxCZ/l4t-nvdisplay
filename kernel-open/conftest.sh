@@ -6669,6 +6669,25 @@ compile_test() {
             compile_check_conftest "$CODE" "NV_DRM_MODE_CREATE_DP_COLORSPACE_PROPERTY_HAS_SUPPORTED_COLORSPACES_ARG" "" "types"
         ;;
 
+        drm_has_sysfs_connector_property_event)
+            #
+            # Rename drm_sysfs_connector_status_event() to
+            # drm_sysfs_connector_property_event(). Indeed, "status" is a bit
+            # vague: it can easily be confused with the connected/disconnected
+            # status of the connector. This function has nothing to do with
+            # connected/disconnected: it merely sends a notification that a
+            # connector's property has changed (e.g. HDCP, privacy screen, etc).
+            #
+            CODE="
+            #include <drm/drm_sysfs.h>
+            void conftest_drm_has_sysfs_connector_property_event()
+            {
+                drm_sysfs_connector_property_event(NULL, NULL);
+            }"
+
+            compile_check_conftest "$CODE" "NV_DRM_HAS_SYSFS_CONNECTOR_PROPERTY_EVENT" "" "functions"
+        ;;
+
         # When adding a new conftest entry, please use the correct format for
         # specifying the relevant upstream Linux kernel commit.
         #
