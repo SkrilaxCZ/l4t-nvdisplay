@@ -1207,6 +1207,20 @@ static int nv_platform_device_remove(struct platform_device *plat_dev)
     return rc;
 }
 
+#if defined(NV_PLATFORM_DRIVER_STRUCT_REMOVE_RETURNS_VOID) /* Linux v6.11 */
+static void nv_platform_device_remove_wrapper(struct platform_device *pdev)
+{
+    nv_platform_device_remove(pdev);
+}
+#else
+static int nv_platform_device_remove_wrapper(struct platform_device *pdev)
+{
+    nv_platform_device_remove(pdev);
+
+    return 0;
+}
+#endif
+
 const struct of_device_id nv_platform_device_table[] =
 {
     { .compatible = "nvidia,tegra234-display",},
@@ -1228,7 +1242,7 @@ struct platform_driver nv_platform_driver = {
 #endif
     },
     .probe     = nv_platform_device_probe,
-    .remove    = nv_platform_device_remove,
+    .remove    = nv_platform_device_remove_wrapper,
 };
 
 int nv_platform_count_devices(void)

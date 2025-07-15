@@ -6576,12 +6576,64 @@ compile_test() {
             compile_check_conftest "$CODE" "NV_DRM_APERTURE_REMOVE_CONFLICTING_FRAMEBUFFERS_HAS_NO_PRIMARY_ARG" "" "types"
         ;;
 
+        of_property_for_each_u32_has_internal_args)
+            #
+            # Determine if the internal arguments for the macro
+            # of_property_for_each_u32() are present.
+            #
+            # Commit 9722c3b66e21 ("of: remove internal arguments from
+            # of_property_for_each_u32()") removes two arguments from
+            # of_property_for_each_u32() which are used internally within
+            # the macro and so do not need to be passed. This change was
+            # made for Linux v6.11.
+            #
+            CODE="
+            #include <linux/of.h>
+            void conftest_of_property_for_each_u32(struct device_node *np,
+                                                   char *propname) {
+                struct property *iparam1;
+                const __be32 *iparam2;
+                u32 val;
+
+                of_property_for_each_u32(np, propname, iparam1, iparam2, val);
+            }"
+
+            compile_check_conftest "$CODE" "NV_OF_PROPERTY_FOR_EACH_U32_HAS_INTERNAL_ARGS" "" "types"
+        ;;
+
+        platform_driver_struct_remove_returns_void)
+            #
+            # Determine if the 'platform_driver' structure 'remove' function
+            # pointer returns void.
+            #
+            # Commit 0edb555a65d1 ("platform: Make platform_driver::remove()
+            # return void") updated the platform_driver structure 'remove'
+            # callback to return void instead of int in Linux v6.11-rc1.
+            #
+            echo "$CONFTEST_PREAMBLE
+            #include <linux/platform_device.h>
+            int conftest_platform_driver_struct_remove_returns_void(struct platform_device *pdev,
+                                                                    struct platform_driver *driver) {
+                return driver->remove(pdev);
+            }" > conftest$$.c
+
+            $CC $CFLAGS -c conftest$$.c > /dev/null 2>&1
+            rm -f conftest$$.c
+
+            if [ -f conftest$$.o ]; then
+                rm -f conftest$$.o
+
+                echo "#undef NV_PLATFORM_DRIVER_STRUCT_REMOVE_RETURNS_VOID" | append_conftest "types"
+            else
+                echo "#define NV_PLATFORM_DRIVER_STRUCT_REMOVE_RETURNS_VOID" | append_conftest "types"
+            fi
+        ;;
+
         # When adding a new conftest entry, please use the correct format for
         # specifying the relevant upstream Linux kernel commit.
         #
         # <function> was added|removed|etc by commit <sha> ("<commit message")
         # in <kernel-version> (<commit date>).
-
         *)
             # Unknown test name given
             echo "Error: unknown conftest '$1' requested" >&2
