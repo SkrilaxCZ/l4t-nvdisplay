@@ -71,6 +71,7 @@
 #include <drm/drm_fbdev_generic.h>
 #endif
 
+#include <linux/of_address.h>
 #include <linux/pci.h>
 #include <linux/version.h>
 #include <linux/workqueue.h>
@@ -1671,7 +1672,29 @@ static void nv_drm_update_drm_driver_features(void)
 #endif /* NV_DRM_ATOMIC_MODESET_AVAILABLE */
 }
 
+static void nv_drm_parse_memory_region(struct device *dev,
+                                       resource_size_t *base,
+                                       resource_size_t *size)
+{
+    struct device_node *np = dev->of_node;
+    struct device_node *mem;
+    struct resource memory;
+    int ret;
 
+    mem = of_parse_phandle(np, "memory-region", 0);
+    if (!mem)
+        return;
+
+    ret = of_address_to_resource(mem, 0, &memory);
+    of_node_put(mem);
+    if (ret < 0) {
+        dev_err(dev, "failed to parse memory-region\n");
+        return;
+    }
+
+    *base = memory.start;
+    *size = resource_size(&memory);
+}
 
 /*
  * Helper function for allocate/register DRM device for given NVIDIA GPU ID.
@@ -1755,6 +1778,12 @@ static void nv_drm_register_drm_device(const nv_gpu_info_t *gpu_info)
 
                 base = (resource_size_t) params.baseAddress;
                 size = (resource_size_t) params.size;
+            }
+
+            if (base == 0 || size == 0)
+                nv_drm_parse_memory_region(device, &base, &size);
+
+            if (base != 0 && size != 0) {
 
 #if defined(NV_DRM_APERTURE_REMOVE_CONFLICTING_FRAMEBUFFERS_HAS_DRIVER_ARG)
                 drm_aperture_remove_conflicting_framebuffers(base, size, false, &nv_drm_driver);
