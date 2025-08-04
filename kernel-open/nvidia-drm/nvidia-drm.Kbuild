@@ -87,6 +87,7 @@ NV_CONFTEST_FUNCTION_COMPILE_TESTS += sync_file_get_fence
 NV_CONFTEST_FUNCTION_COMPILE_TESTS += drm_aperture_remove_conflicting_framebuffers
 NV_CONFTEST_FUNCTION_COMPILE_TESTS += drm_aperture_remove_conflicting_pci_framebuffers
 NV_CONFTEST_FUNCTION_COMPILE_TESTS += drm_fbdev_generic_setup
+NV_CONFTEST_FUNCTION_COMPILE_TESTS += drm_fbdev_ttm_setup
 
 NV_CONFTEST_TYPE_COMPILE_TESTS += drm_bus_present
 NV_CONFTEST_TYPE_COMPILE_TESTS += drm_bus_has_bus_type
