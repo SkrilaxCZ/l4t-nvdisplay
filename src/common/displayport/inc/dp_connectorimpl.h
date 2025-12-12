@@ -565,6 +565,7 @@ namespace DisplayPort
         void freeTimeslice(GroupImpl * targetGroup);
         void flushTimeslotsToHardware();
         void hdcpRenegotiate(NvU64 cN, NvU64 cKsv);
+        void hdcpActiveGroupsSetECF();
         bool getHDCPAbortCodesDP12(NvU32 &hdcpAbortCodesDP12);
         bool getOuiSink(unsigned &ouiId, char * modelName, size_t modelNameBufferSize, NvU8 & chipRevision);
         bool hdcpValidateKsv(const NvU8 *ksv, NvU32 Size);

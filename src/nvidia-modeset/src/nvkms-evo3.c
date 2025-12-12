@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright (c) 2010-2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * SPDX-FileCopyrightText: Copyright (c) 2010-2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: MIT
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -1336,7 +1336,8 @@ static void ConfigureCsc1C5(NVDevEvoPtr pDevEvo,
             matrix = LMSToRec2020RGB;
         } else if (pHeadState->colorimetry == NVKMS_OUTPUT_COLORIMETRY_BT601) {
             matrix = LMSToRec601RGB;
-        } else if (pHeadState->colorimetry == NVKMS_OUTPUT_COLORIMETRY_BT709) {
+        } else {
+            // For unsupported or default output color spaces also , use 709 matrix
             matrix = LMSToRec709RGB;
         }
 
@@ -1486,9 +1487,15 @@ static const NvU32* EvoGetFMTMatrixC5(
                     } else {
                         retValue = FMTMatrix[FMT_COEFF_TYPE_REC601_YUV_12BPC_LTD_TO_RGB_16BPC_FULL];
                     }
+                }  else {
+                        // Unsupported bit depth, fail silently by defaulting to identity.
+                        retValue = FMTMatrix[FMT_COEFF_TYPE_IDENTITY];
                 }
                 break;
             case NVKMS_INPUT_COLORSPACE_BT709:
+            case NVKMS_INPUT_COLORSPACE_NONE:
+            default:
+                // Unsupported or if input color space is not set, use 709 FMT matrix.
                 if (pFormatInfo->yuv.depthPerComponent == 8) {
                     if (specifiedFull) {
                        retValue = FMTMatrix[FMT_COEFF_TYPE_REC709_YUV_8BPC_FULL_TO_RGB_16BPC_FULL];
@@ -1507,6 +1514,9 @@ static const NvU32* EvoGetFMTMatrixC5(
                     } else {
                        retValue = FMTMatrix[FMT_COEFF_TYPE_REC709_YUV_12BPC_LTD_TO_RGB_16BPC_FULL];
                     }
+                }  else {
+                        // Unsupported bit depth, fail silently by defaulting to identity.
+                        retValue = FMTMatrix[FMT_COEFF_TYPE_IDENTITY];
                 }
                 break;
             case NVKMS_INPUT_COLORSPACE_BT2100_PQ:
@@ -1528,11 +1538,11 @@ static const NvU32* EvoGetFMTMatrixC5(
                     } else {
                        retValue = FMTMatrix[FMT_COEFF_TYPE_REC2020_YUV_12BPC_LTD_TO_RGB_16BPC_FULL];
                     }
+                }  else {
+                        // Unsupported bit depth, fail silently by defaulting to identity.
+                        retValue = FMTMatrix[FMT_COEFF_TYPE_IDENTITY];
                  }
                  break;
-            default:
-                // Unsupported bit depth, fail silently by defaulting to identity.
-                retValue = FMTMatrix[FMT_COEFF_TYPE_IDENTITY];
             }
     } else {
         // All inputs with RGB colorspace receive an identity FMT.

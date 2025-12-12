@@ -625,7 +625,7 @@ static int nv_drm_plane_atomic_check(struct drm_plane *plane,
             }
 
 #if defined(NV_DRM_COLOR_MGMT_AVAILABLE)
-            if (crtc_state->color_mgmt_changed) {
+            if (crtc_state->color_mgmt_changed || ((plane->state->crtc != plane_state->crtc))) {
                 /*
                  * According to the comment in the Linux kernel's
                  * drivers/gpu/drm/drm_color_mgmt.c, if this property is NULL,

@@ -2141,6 +2141,24 @@ void ConnectorImpl::releaseLinkHandsOff()
     assessLink();
 }
 
+void ConnectorImpl::hdcpActiveGroupsSetECF()
+{
+    NvU64 ecf = 0x0;
+    // Set the ECF for the groups which are already active.
+    for (ListElement *i = this->activeGroups.begin(); i != this->activeGroups.end(); i = i->next)
+    {
+        GroupImpl * group = (GroupImpl *)i;
+        if (group->hdcpEnabled)
+        {
+            NvU64 countOnes = (((NvU64)1) << group->timeslot.count) - 1;
+            NvU64 mask = countOnes << group->timeslot.begin;
+            ecf |= mask;
+        }
+    }
+    // Restore the ECF and trigger ACT
+    main->configureAndTriggerECF(ecf);
+}
+
 //
 //     Timer callback for event management
 //          Uses: fireEvents()
@@ -2160,7 +2178,10 @@ void ConnectorImpl::expired(const void * tag)
             while (!(hdcpEnableTransitionGroups.isEmpty()))
             {
                 GroupImpl* curStrmEncrEnblGroup = hdcpEnableTransitionGroups.pop();
-                curStrmEncrEnblGroup->hdcpSetEncrypted(true);
+                if (!(curStrmEncrEnblGroup->hdcpEnabled))
+                {
+                    curStrmEncrEnblGroup->hdcpSetEncrypted(true, NV0073_CTRL_SPECIFIC_HDCP_CTRL_HDCP22_TYPE_1);
+                }
             }
         }
     }
@@ -2169,10 +2190,12 @@ void ConnectorImpl::expired(const void * tag)
         if (authRetries < HDCP_AUTHENTICATION_RETRIES)
         {
             HDCPState hdcpState = {0};
+            // Get hdcp state which will be !HDCP_State_Authenticated for the first entry and
+            // subsequently it will reflect the result of last fired configureHDCPRenegotiate
             main->configureHDCPGetHDCPState(hdcpState);
 
             unsigned authDelay = (hdcpState.HDCP_State_22_Capable ?
-                HDCP22_AUTHENTICATION_COOLDOWN : HDCP_AUTHENTICATION_COOLDOWN);
+                HDCP22_AUTHENTICATION_COOLDOWN * 2 : HDCP_AUTHENTICATION_COOLDOWN);
 
             // Don't fire any reauthentication if we're not done with the modeset
             if (!intransitionGroups.isEmpty())
@@ -2190,26 +2213,23 @@ void ConnectorImpl::expired(const void * tag)
 
             authRetries++;
             isHDCPAuthTriggered = true;
-            main->configureHDCPRenegotiate();
-            main->configureHDCPGetHDCPState(hdcpState);
+
+            // Skip configureHDCPRenegotiate if HDCP is already enabled from previous
+            // previous call to configureHDCPRenegotiate
+            if (!hdcpState.HDCP_State_Authenticated)
+            {
+                main->configureHDCPRenegotiate();
+                // Get fresh hdcp state after Renegotiate as HDCP1X can be enabled
+                // synchronously by configureHDCPRenegotiate (HDCP2X takes time)
+                main->configureHDCPGetHDCPState(hdcpState);
+            }
 
             if (hdcpState.HDCP_State_Authenticated)
             {
                 isHDCPAuthOn = true;
                 authRetries = 0;
                 // Set the ECF for the groups which are already active.
-                for (ListElement *i = this->activeGroups.begin(); i != this->activeGroups.end(); i = i->next)
-                {
-                    GroupImpl * group = (GroupImpl *)i;
-                    if (group->hdcpEnabled)
-                    {
-                        NvU64 countOnes = (((NvU64)1) << group->timeslot.count) - 1;
-                        NvU64 mask = countOnes << group->timeslot.begin;
-                        ecf |= mask;
-                    }
-                }
-                // Restore the ECF and trigger ACT
-                main->configureAndTriggerECF(ecf);
+                hdcpActiveGroupsSetECF();
                 // Enable HDCP for Group
                 if (!(bHdcpStrmEncrEnblOnlyOnDemand))
                 {
@@ -3260,6 +3280,12 @@ void ConnectorImpl::notifyAttachEnd(bool modesetCancelled)
         }
     }
 
+    { // Set stream type and bEnforceType0Hdcp1xDS upfront before enabling hdcp with hub
+        bool bNeedReNegotiate = false;
+        main->setStreamType(currentModesetDeviceGroup->streamIndex,
+            NV0073_CTRL_SPECIFIC_HDCP_CTRL_HDCP22_TYPE_1, &bNeedReNegotiate);
+    }
+
     //
     // RM has the requirement of Head being ARMed to do authentication.
     // Postpone the authentication until the NAE to do the authentication for DP1.2 as solution.
@@ -3486,6 +3512,27 @@ void ConnectorImpl::notifyDetachEnd(bool bKeepOdAlive)
         if (this->policyModesetOrderMitigation && this->modesetOrderMitigation)
             this->modesetOrderMitigation = false;
     }
+    else // !activeGroups.isEmpty()
+    {
+        if ((this->linkUseMultistream()) && (hdcpState.HDCP_State_Authenticated))
+        {
+            if (hdcpState.HDCP_State_22_Capable)
+            {
+                main->configureAndTriggerECF(0x0);
+                authRetries = 0;
+                isHDCPAuthOn = false;
+                // numOfStream changed, AKE_Init needed to change dpTypeMask
+                main->configureHDCPRenegotiate();
+                // ReAuth, so schedule callback to check state later.
+                timer->queueCallback(this, &tagHDCPReauthentication, HDCP_AUTHENTICATION_COOLDOWN);
+            }
+            else
+            {
+                hdcpActiveGroupsSetECF();
+            }
+        }
+    }
+
     fireEvents();
 }
 

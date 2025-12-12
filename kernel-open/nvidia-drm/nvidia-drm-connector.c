@@ -45,7 +45,14 @@
 #include <drm/drm_atomic_helper.h>
 #include <drm/drm_edid.h>
 
+#if defined(NV_DRM_DISPLAY_DRM_HDCP_HELPER_H_PRESENT)
+#include <drm/display/drm_hdcp_helper.h>
+#elif defined(NV_DRM_DISPLAY_DRM_HDCP_H_PRESENT)
+#include <drm/display/drm_hdcp.h>
+#else
 #include <drm/drm_hdcp.h>
+#endif
+
 #include <drm/drm_sysfs.h>
 
 static void nv_drm_connector_destroy(struct drm_connector *connector)
@@ -786,8 +793,13 @@ int nv_drm_connector_update_topology_property(struct nv_drm_connector *nv_connec
                                             &connector->base,
                                             nv_dev->nv_hdcp_topology_property);
     // Generate uevent on cp property when topology is updated
+#if defined(NV_DRM_SYSFS_CONNECTOR_PROPERTY_EVENT_PRESENT)
+    drm_sysfs_connector_property_event(connector,
+        dev->mode_config.content_protection_property);
+#else
     drm_sysfs_connector_status_event(connector,
         dev->mode_config.content_protection_property);
+#endif
 
     return ret;
 }

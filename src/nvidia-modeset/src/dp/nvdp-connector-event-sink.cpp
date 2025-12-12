@@ -552,6 +552,19 @@ void ConnectorEventSink::notifyCableOkStateChange(DisplayPort::Device *dev,
 void ConnectorEventSink::notifyHDCPCapDone(DisplayPort::Device *dev,
                                                       bool hdcpCap)
 {
+    NVDpyEvoPtr pDpyEvo = NULL;
+    pDpyEvo = FindDpyByDevice(pConnectorEvo, dev);
+    if (pDpyEvo)
+    {
+        if (hdcpCap)
+        {
+            nvSendDpyEventEvo(pDpyEvo, NVKMS_EVENT_TYPE_DPY_CP_CHANGED);
+        }
+        else
+        {
+            nvSendDpyClearEventEvo(pDpyEvo, NVKMS_EVENT_TYPE_DPY_CP_CHANGED);
+        }
+    }
 }
 
 void ConnectorEventSink::notifyMCCSEvent(DisplayPort::Device *dev)

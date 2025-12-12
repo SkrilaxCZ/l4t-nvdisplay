@@ -546,7 +546,7 @@ bool EvoMainLink::setStreamType(unsigned streamIndex, NvU8 streamType, bool * bN
     //  1. Will it stop engaging HWDRM with this fix ?
     //  2. VPR blanking gets applied and blanks repeater display as well
     //
-    paramsHdcpCtrl.bEnforceType0Hdcp1xDS = (streamType == NV0073_CTRL_SPECIFIC_HDCP_CTRL_HDCP22_TYPE_1);
+    paramsHdcpCtrl.bEnforceType0Hdcp1xDS = NV_TRUE;
 
     paramsHdcpCtrl.cmd |= DRF_DEF(0073_CTRL_SPECIFIC, _HDCP_CTRL, _CMD,
                                     _SET_TYPE);

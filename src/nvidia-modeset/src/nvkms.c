@@ -2649,7 +2649,7 @@ static NvBool RegisterSurface(struct NvKmsPerOpen *pOpen,
 
     nvEvoRegisterSurface(pOpenDev->pDevEvo, pOpenDev, pParams,
                          NvHsMapPermissionsReadOnly);
-    return TRUE;
+    return pParams->reply.surfaceHandle != 0;
 }
 
 

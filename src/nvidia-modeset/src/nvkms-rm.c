@@ -1582,7 +1582,7 @@ static void ReceiveHotplugEvent(void *arg, void *pEventDataVoid, NvU32 hEvent,
         nvHandleHotplugEventDeferredWork, /* callback */
         arg, /* argument (this is a ref_ptr to a pDispEvo) */
         0,   /* dataU32 */
-        0);
+        100000 /*sleep 100 ms */);
 }
 
 static void ReceiveDPIRQEvent(void *arg, void *pEventDataVoid, NvU32 hEvent,

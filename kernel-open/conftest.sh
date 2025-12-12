@@ -1390,6 +1390,23 @@ compile_test() {
             compile_check_conftest "$CODE" "NV_DRM_DEV_UNREF_PRESENT" "" "functions"
         ;;
 
+        drm_sysfs_connector_property_event)
+            #
+            # Determine if drm_sysfs_connector_property_event() is present.
+            #
+            # Commit 0cf8d292ba5e ("drm/sysfs: rename drm_sysfs_connector_status_event()")
+            # renamed drm_sysfs_connector_status_event() to
+            # drm_sysfs_connector_property_event() in Linux v6.5.
+            #
+            CODE="
+            #include <drm/drm_sysfs.h>
+            void conftest_drm_sysfs_connector_property_event(void) {
+                drm_sysfs_connector_property_event();
+            }"
+
+            compile_check_conftest "$CODE" "NV_DRM_SYSFS_CONNECTOR_PROPERTY_EVENT_PRESENT" "" "functions"
+        ;;
+
         pde_data)
             #
             # Determine if the pde_data() function is present.

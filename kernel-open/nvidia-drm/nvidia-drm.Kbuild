@@ -89,6 +89,7 @@ NV_CONFTEST_FUNCTION_COMPILE_TESTS += drm_aperture_remove_conflicting_pci_frameb
 NV_CONFTEST_FUNCTION_COMPILE_TESTS += drm_fbdev_generic_setup
 NV_CONFTEST_FUNCTION_COMPILE_TESTS += drm_helper_crtc_enable_color_mgmt
 NV_CONFTEST_FUNCTION_COMPILE_TESTS += drm_crtc_enable_color_mgmt
+NV_CONFTEST_FUNCTION_COMPILE_TESTS += drm_sysfs_connector_property_event
 
 NV_CONFTEST_TYPE_COMPILE_TESTS += drm_bus_present
 NV_CONFTEST_TYPE_COMPILE_TESTS += drm_bus_has_bus_type

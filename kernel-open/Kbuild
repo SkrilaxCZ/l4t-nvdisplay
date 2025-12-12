@@ -72,7 +72,7 @@ EXTRA_CFLAGS += -I$(src)/common/inc
 EXTRA_CFLAGS += -I$(src)
 EXTRA_CFLAGS += -Wall $(DEFINES) $(INCLUDES) -Wno-cast-qual -Wno-error -Wno-format-extra-args
 EXTRA_CFLAGS += -D__KERNEL__ -DMODULE -DNVRM
-EXTRA_CFLAGS += -DNV_VERSION_STRING=\"540.4.0\"
+EXTRA_CFLAGS += -DNV_VERSION_STRING=\"540.5.0\"
 
 ifneq ($(SYSSRCHOST1X),)
  EXTRA_CFLAGS += -I$(SYSSRCHOST1X)
@@ -212,6 +212,8 @@ $(obj)/conftest/patches.h: $(NV_CONFTEST_SCRIPT)
 # corresponding #define will be generated in conftest/headers.h.
 NV_HEADER_PRESENCE_TESTS = \
  asm/system.h \
+ drm/display/drm_hdcp.h \
+ drm/display/drm_hdcp_helper.h \
  drm/drmP.h \
  drm/drm_aperture.h \
  drm/drm_auth.h \
